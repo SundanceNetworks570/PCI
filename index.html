@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MSP PCI Compliance Evaluation Questionnaire</title>
+<style>
+  :root{
+    --bg:#f7f7fb;
+    --card:#ffffff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --primary:#2563eb;
+    --accent:#10b981;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --border:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+    line-height:1.5;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:linear-gradient(180deg, #ffffff 0%, #ffffffcc 70%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid var(--border);
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:24px}
+  h1{margin:0 0 8px 0; font-size:1.8rem}
+  h2{margin-top:32px; font-size:1.3rem}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 6px 18px rgba(0,0,0,.04);
+    margin-top:16px;
+  }
+  .grid{
+    display:grid; gap:12px;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+  .grid .field{display:flex; flex-direction:column}
+  label{font-weight:600; font-size:.92rem; margin-bottom:6px}
+  input[type="text"], input[type="email"], input[type="tel"], input[type="datetime-local"]{
+    border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:1rem;
+    background:#fff; color:var(--ink);
+  }
+  .toolbar{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;
+  }
+  button{
+    appearance:none; border:1px solid var(--border); background:#fff; color:var(--ink);
+    padding:10px 14px; border-radius:999px; cursor:pointer; font-weight:600;
+    transition:.2s ease; box-shadow:0 2px 6px rgba(0,0,0,.05);
+  }
+  button.primary{background:var(--primary); color:#fff; border-color:transparent}
+  button.success{background:var(--accent); color:#fff; border-color:transparent}
+  button.warn{background:var(--warn); color:#fff; border-color:transparent}
+  button.danger{background:var(--danger); color:#fff; border-color:transparent}
+  button:hover{transform:translateY(-1px)}
+  .question{
+    display:grid; grid-template-columns: 1fr 180px 1fr; gap:10px; align-items:start;
+    padding:10px 12px; border-bottom:1px dashed var(--border);
+  }
+  .question:last-child{border-bottom:none}
+  .question small{color:var(--muted)}
+  select, textarea{
+    border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:.98rem;
+    width:100%; background:#fff;
+  }
+  textarea{min-height:40px; resize:vertical}
+  .section-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 12px; background:#f8fafc; border:1px solid var(--border);
+    border-radius:10px; margin-bottom:10px;
+  }
+  .badge{font-size:.8rem; padding:6px 10px; border-radius:999px; background:#eef2ff; color:#3730a3}
+  .score-card{
+    display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(230px,1fr));
+  }
+  .metric{border:1px solid var(--border); border-radius:12px; padding:12px; background:#fff}
+  .metric h3{margin:0 0 8px 0; font-size:1rem}
+  .metric .val{font-size:1.6rem; font-weight:800}
+  .muted{color:var(--muted)}
+  .footer-note{font-size:.9rem; color:var(--muted)}
+  .sticky-actions{
+    position:sticky; bottom:0; background:linear-gradient(0deg,#ffffff, #ffffffee 70%, transparent);
+    border-top:1px solid var(--border); padding:12px; margin-top:24px;
+  }
+  @media print{
+    header,.sticky-actions,.toolbar{display:none !important}
+    body{background:#fff}
+    .card{box-shadow:none}
+    a[href]:after{content:""}
+  }
+
+  /* PDF Reference Modal */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(15,23,42,.55);
+    display:none; align-items:center; justify-content:center;
+    padding:24px; z-index:9999;
+  }
+  .modal{
+    width:min(1100px, 96vw);
+    height:min(760px, 92vh);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 18px 60px rgba(0,0,0,.25);
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+  .modal-header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    background:#fff;
+  }
+  .modal-title{
+    font-weight:800;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .modal-actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+  .modal-body{flex:1; background:#0b1220}
+  .modal-body iframe{
+    width:100%; height:100%;
+    border:0;
+    background:#0b1220;
+  }
+  .modal-close{
+    border-color:var(--border);
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>MSP PCI Compliance Evaluation Questionnaire</h1>
+    <div class="footer-note">Use this form to assess PCI DSS readiness based on MSP-implemented controls. Fields are fillable and printable.</div>
+    <div class="toolbar">
+      <button class="primary" onclick="calculateScore()">Calculate Score</button>
+      <button class="success" onclick="window.print()">Print / Save as PDF</button>
+      <div class="field" style="min-width:420px">
+        <label style="margin:0 0 0 8px; font-size:.85rem; font-weight:700; color:var(--muted)">Reference PDFs</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-left:8px">
+          <select id="pdfSelect">
+            <option value="">— Open a reference PDF —</option>
+            <option value="PCI_DSS_4.0_SAQ_Comparison.pdf">PCI_DSS_4.0_SAQ_Comparison.pdf</option>
+            <option value="PCI-DSS-v4_0_1.pdf">PCI-DSS-v4_0_1.pdf</option>
+            <option value="PCI-DSS-v4_0_1-SAQ-A.pdf">PCI-DSS-v4_0_1-SAQ-A.pdf</option>
+            <option value="PCI-DSS-v4-0-1-SAQ-B.pdf">PCI-DSS-v4-0-1-SAQ-B.pdf</option>
+            <option value="PCI-DSS-v4-0-1-SAQ-C.pdf">PCI-DSS-v4-0-1-SAQ-C.pdf</option>
+            <option value="PCI-DSS-v4-0-1-SAQ-D-Merchant.pdf">PCI-DSS-v4-0-1-SAQ-D-Merchant.pdf</option>
+            <option value="PCI-DSS-v4-0-1-SAQ-D-Service-Provider-r2.pdf">PCI-DSS-v4-0-1-SAQ-D-Service-Provider-r2.pdf</option>
+          </select>
+          <button type="button" id="pdfOpenBtn" onclick="__pciOpenSelectedPdf()">Open</button>
+        </div>
+      </div>
+
+      <script>
+        // Local-file-safe opener (modal first; fallback new tab)
+        function __pciOpenSelectedPdf(){
+          var sel = document.getElementById('pdfSelect');
+          var val = sel ? sel.value : '';
+          if(!val){ alert('Select a reference PDF first.'); return; }
+
+          var backdrop = document.getElementById('pdfModalBackdrop');
+          var frame = document.getElementById('pdfFrame');
+          var titleEl = document.getElementById('pdfModalTitle');
+          var dl = document.getElementById('pdfDownloadLink');
+
+          if(backdrop && frame){
+            if(titleEl){ titleEl.textContent = val; }
+            if(dl){ dl.href = val; dl.setAttribute('download', val.split('/').pop() || 'reference.pdf'); }
+            frame.src = val;
+            backdrop.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+          }else{
+            window.open(val, '_blank', 'noopener');
+          }
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+          var sel = document.getElementById('pdfSelect');
+          if(sel){
+            sel.addEventListener('change', function(){
+              if(sel.value) __pciOpenSelectedPdf();
+            });
+          }
+        });
+      </script>
+
+      <button class="warn" onclick="composeEmail()">Email Summary</button>
+      <button onclick="saveLocally()">Save Progress</button>
+      <button onclick="loadLocally()">Load Saved</button>
+      <button class="danger" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Client & Assessment Info -->
+  <div class="card">
+    <h2>Client & Assessment Information</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Client Name</label>
+        <input type="text" id="clientName" placeholder="Client company or merchant name"/>
+      </div>
+      <div class="field">
+        <label>Client Email</label>
+        <input type="email" id="clientEmail" placeholder="billing@client.com"/>
+      </div>
+      <div class="field">
+        <label>Client Phone</label>
+        <input type="tel" id="clientPhone" placeholder="+1 (555) 555-5555"/>
+      </div>
+      <div class="field">
+        <label>Assessment Date & Time</label>
+        <input type="datetime-local" id="assessmentDateTime"/>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="field" style="grid-column: span 2">
+        <label>Client Address</label>
+        <input type="text" id="clientAddress" placeholder="Street, City, State, ZIP"/>
+      </div>
+      <div class="field">
+        <label>Assessor Name</label>
+        <input type="text" id="assessorName" placeholder="Your full name"/>
+      </div>
+      <div class="field">
+        <label>Assessor Title</label>
+        <input type="text" id="assessorTitle" placeholder="e.g., Security Analyst"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questionnaire Sections will be inserted here -->
+  <div id="sections"></div>
+
+  <!-- Results / Grading -->
+  <div class="card" id="resultsCard">
+    <div class="section-header">
+      <strong>Results & Grading</strong>
+      <span class="badge" id="lastCalculated">Not calculated</span>
+    </div>
+    <div class="score-card">
+      <div class="metric">
+        <h3>Overall Score</h3>
+        <div class="val" id="overallScore">—</div>
+        <div class="muted" id="overallSummary"></div>
+      </div>
+      <div class="metric">
+        <h3>Compliant / Partial / Non / N/A</h3>
+        <div class="val" id="statusCounts">—</div>
+        <div class="muted">Breakdown of selections</div>
+      </div>
+      <div class="metric">
+        <h3>Weighted Denominator</h3>
+        <div class="val" id="denominator">—</div>
+        <div class="muted">Counts N/A items out of scoring</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label>Automatic Findings Summary</label>
+      <textarea id="findings" placeholder="Click Calculate Score to auto-generate. You can edit this text."></textarea>
+    </div>
+  </div>
+
+  <div class="sticky-actions">
+    <div class="toolbar">
+      <button class="primary" onclick="calculateScore()">Calculate Score</button>
+      <button class="success" onclick="window.print()">Print / Save as PDF</button>
+      <button class="warn" onclick="composeEmail()">Email Summary</button>
+    </div>
+  </div>
+
+  <!-- PDF Reference Modal -->
+  <div class="modal-backdrop" id="pdfModalBackdrop" role="dialog" aria-modal="true" aria-label="Reference PDF Viewer" onclick="closePdfModal(event)">
+    <div class="modal'safe" style="display:none"></div>
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" id="pdfModalTitle">Reference PDF</div>
+        <div class="modal-actions">
+          <a id="pdfDownloadLink" href="#" download>
+            <button type="button" class="success">Download PDF</button>
+          </a>
+          <button type="button" class="primary" onclick="printPdfInModal()">Print / Save as PDF</button>
+          <button type="button" onclick="openPdfInNewTab()">Open in New Tab</button>
+          <button type="button" class="modal-close" onclick="forceClosePdfModal()">Close</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfFrame" title="Reference PDF"></iframe>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const sectionsData = [
+  { title: "Network Security", items: [
+    "Firewall protects all CDE systems.",
+    "Firewall/router configurations reviewed at least every 6 months.",
+    "Default passwords/configs changed on all network devices before deployment.",
+    "VLANs or segmentation isolate the CDE.",
+    "Remote connections secured via VPN with MFA."
+  ]},
+  { title: "Data Protection", items: [
+    "Cardholder data encrypted in transit (TLS 1.2+).",
+    "CHD encrypted at rest with strong algorithms (e.g., AES-256).",
+    "Encryption keys securely stored, access restricted, rotated.",
+    "PAN masking applied on UIs/reports.",
+    "Sensitive auth data (CVV/track/PIN) not stored post-authorization."
+  ]},
+  { title: "Access Control", items: [
+    "Unique user IDs (no shared accounts).",
+    "Role-based access control (least privilege).",
+    "MFA for admin or remote access to CHD systems.",
+    "Quarterly user access reviews.",
+    "Terminated/inactive accounts removed promptly."
+  ]},
+  { title: "System Security & Monitoring", items: [
+    "Endpoints/servers have current anti-malware/EDR.",
+    "Critical patches applied within 30 days.",
+    "Centralized logging/monitoring (e.g., SIEM).",
+    "Log retention ≥ 1 year (≥ 3 months online).",
+    "IDS/IPS implemented and monitored."
+  ]},
+  { title: "Vulnerability & Risk Management", items: [
+    "Quarterly external ASV scans in place.",
+    "Internal vulnerability scans performed regularly and after changes.",
+    "Annual (or after major change) penetration tests performed.",
+    "Annual risk assessment conducted.",
+    "Documented patch management process exists."
+  ]},
+  { title: "Security Policies & Procedures", items: [
+    "Written information security policy reviewed annually.",
+    "Incident response procedures in place and tested annually.",
+    "Annual PCI/security awareness training for employees.",
+    "Third-party providers handling CHD reviewed for PCI compliance.",
+    "Data retention & disposal policy in place; CHD deleted when not needed."
+  ]},
+  { title: "Physical Security", items: [
+    "Data centers/network closets access controlled.",
+    "Visitor logs maintained and reviewed.",
+    "Backup media encrypted and stored securely offsite.",
+    "Workstations handling CHD physically secured."
+  ]},
+  { title: "Incident Response & Business Continuity", items: [
+    "Documented IR plan for CHD breaches.",
+    "IR plan tested annually with clear roles.",
+    "Backups and recovery regularly tested for integrity.",
+    "Notification procedures for regulators/card brands defined."
+  ]},
+  { title: "Documentation & Evidence", items: [
+    "Current network diagrams include CDE connections.",
+    "Policies, configurations, and audit logs retained as evidence.",
+    "Current AOC on file for all CHD-related vendors."
+  ]},
+];
+
+const ratings = [
+  { value: "compliant", label:"✅ Compliant", score: 1 },
+  { value: "partial", label:"⚠️ Partially Compliant", score: 0.5 },
+  { value: "non", label:"❌ Non-Compliant", score: 0 },
+  { value: "na", label:"❓ N/A", score: null },
+];
+
+function createSelect(id){
+  const sel = document.createElement("select");
+  sel.id = id;
+  ratings.forEach(r => {
+    const opt = document.createElement("option");
+    opt.value = r.value; opt.textContent = r.label;
+    sel.appendChild(opt);
+  });
+  return sel;
+}
+
+function renderSections(){
+  const host = document.getElementById("sections");
+  sectionsData.forEach((sec, sIdx) => {
+    const card = document.createElement("div");
+    card.className="card";
+    const header = document.createElement("div");
+    header.className="section-header";
+    const h = document.createElement("strong");
+    h.textContent = `${sIdx+1}. ${sec.title}`;
+    const badge = document.createElement("span");
+    badge.className="badge"; badge.id=`badge-${sIdx}`; badge.textContent="0% complete";
+    header.appendChild(h); header.appendChild(badge);
+    card.appendChild(header);
+
+    sec.items.forEach((q, qIdx) => {
+      const row = document.createElement("div");
+      row.className="question";
+      const qLabel = document.createElement("div");
+      qLabel.innerHTML = `<strong>${sIdx+1}.${qIdx+1}</strong> ${q} <br><small>Choose rating and add optional note.</small>`;
+      const selectCell = document.createElement("div");
+      const sel = createSelect(`q-${sIdx}-${qIdx}`);
+      selectCell.appendChild(sel);
+      const notes = document.createElement("div");
+      const ta = document.createElement("textarea");
+      ta.id = `n-${sIdx}-${qIdx}`;
+      ta.placeholder="Notes / evidence / compensating controls";
+      notes.appendChild(ta);
+      row.appendChild(qLabel); row.appendChild(selectCell); row.appendChild(notes);
+      card.appendChild(row);
+    });
+
+    host.appendChild(card);
+  });
+}
+
+function nowLocalISOForInput(){
+  const dt = new Date();
+  const tzOffset = dt.getTimezoneOffset();
+  const local = new Date(dt.getTime() - tzOffset*60000);
+  return local.toISOString().slice(0,16);
+}
+
+function init(){
+  renderSections();
+  document.getElementById("assessmentDateTime").value = nowLocalISOForInput();
+  updateSectionBadges();
+  // Default all selects to 'non' to force explicit choice? We'll default to 'non' but better to start as 'non'?
+  // Keep default as first option 'Compliant' for neutral; instead mark as empty by inserting a blank option first:
+  document.querySelectorAll("select").forEach(sel => {
+    const blank = document.createElement("option");
+    blank.value = ""; blank.textContent = "— Select —";
+    sel.insertBefore(blank, sel.firstChild);
+    sel.value = "";
+    sel.addEventListener("change", updateSectionBadges);
+  });
+}
+
+function updateSectionBadges(){
+  sectionsData.forEach((sec, sIdx) => {
+    const total = sec.items.length;
+    let filled = 0;
+    sec.items.forEach((_, qIdx) => {
+      const val = (document.getElementById(`q-${sIdx}-${qIdx}`)||{}).value;
+      if(val) filled++;
+    });
+    const pct = Math.round((filled/total)*100);
+    const badge = document.getElementById(`badge-${sIdx}`);
+    if(badge) badge.textContent = `${pct}% complete`;
+  });
+}
+
+function calculateScore(){
+  let totalScore = 0;
+  let denom = 0;
+  let counts = {compliant:0, partial:0, non:0, na:0};
+  const nonOrPartial = [];
+  sectionsData.forEach((sec, sIdx) => {
+    sec.items.forEach((q, qIdx) => {
+      const sel = document.getElementById(`q-${sIdx}-${qIdx}`);
+      const val = sel ? sel.value : "";
+      const rating = ratings.find(r=>r.value===val);
+      if(!rating){ return; }
+      counts[val] = (counts[val]||0)+1;
+      if(rating.score!==null){
+        totalScore += rating.score;
+        denom += 1;
+        if(rating.score < 1){
+          const note = (document.getElementById(`n-${sIdx}-${qIdx}`)||{}).value || "";
+          nonOrPartial.push(`${sec.title} ${sIdx+1}.${qIdx+1}: ${q}${note ? " — Notes: "+note : ""}`);
+        }
+      }
+    });
+  });
+  const pct = denom>0 ? Math.round((totalScore/denom)*100) : 0;
+  document.getElementById("overallScore").textContent = `${pct}%`;
+  document.getElementById("statusCounts").textContent = `${counts.compliant||0} / ${counts.partial||0} / ${counts.non||0} / ${counts.na||0}`;
+  document.getElementById("denominator").textContent = `${denom} scored items`;
+  const tier = pct>=90 ? "Low risk / Likely compliant" : pct>=75 ? "Moderate risk / Gaps present" : "High risk / Significant remediation required";
+  document.getElementById("overallSummary").textContent = tier;
+  document.getElementById("lastCalculated").textContent = `Calculated ${new Date().toLocaleString()}`;
+
+  const client = collectClient();
+  const lines = [];
+  lines.push(`Assessment for: ${client.name || "Unknown Client"}`);
+  lines.push(`Date/Time: ${client.dateTime || new Date().toLocaleString()}`);
+  lines.push(`Assessor: ${client.assessorName || ""} ${client.assessorTitle ? "("+client.assessorTitle+")" : ""}`);
+  lines.push("");
+  lines.push(`Overall Score: ${pct}% (${counts.compliant||0} ✔ / ${(counts.partial||0)} ⚠ / ${(counts.non||0)} ✖ / ${(counts.na||0)} N/A)`);
+  lines.push(`Summary: ${tier}`);
+  lines.push("");
+  if(nonOrPartial.length){
+    lines.push("Items needing attention:");
+    nonOrPartial.forEach(x=>lines.push(" - " + x));
+  } else {
+    lines.push("All scored items marked compliant.");
+  }
+  document.getElementById("findings").value = lines.join("\n");
+}
+
+function collectClient(){
+  return {
+    name: document.getElementById("clientName").value.trim(),
+    email: document.getElementById("clientEmail").value.trim(),
+    phone: document.getElementById("clientPhone").value.trim(),
+    address: document.getElementById("clientAddress").value.trim(),
+    assessorName: document.getElementById("assessorName").value.trim(),
+    assessorTitle: document.getElementById("assessorTitle").value.trim(),
+    dateTime: document.getElementById("assessmentDateTime").value
+  };
+}
+
+function composeEmail(){
+  calculateScore(); // ensure findings/score up-to-date
+  const client = collectClient();
+  const subject = `PCI Assessment - ${client.name || "Client"} (${new Date().toLocaleDateString()})`;
+  const bodyLines = [];
+  bodyLines.push(`Client: ${client.name}`);
+  if(client.address) bodyLines.push(`Address: ${client.address}`);
+  if(client.phone) bodyLines.push(`Phone: ${client.phone}`);
+  if(client.email) bodyLines.push(`Email: ${client.email}`);
+  bodyLines.push(`Assessment Date/Time: ${client.dateTime}`);
+  if(client.assessorName) bodyLines.push(`Assessor: ${client.assessorName}${client.assessorTitle? " ("+client.assessorTitle+")":""}`);
+  bodyLines.push("");
+  bodyLines.push(document.getElementById("findings").value);
+
+  const mailto = `mailto:${encodeURIComponent(client.email || "")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
+  window.location.href = mailto;
+}
+
+function clearForm(){
+  if(!confirm("Clear all fields? This will remove selections and notes.")) return;
+  document.querySelectorAll("input, textarea, select").forEach(el=>{
+    if(el.tagName==="SELECT"){
+      el.value = "";
+    }else if(el.type==="datetime-local"){
+      el.value = nowLocalISOForInput();
+    }else{
+      el.value = "";
+    }
+  });
+  document.getElementById("overallScore").textContent = "—";
+  document.getElementById("statusCounts").textContent = "—";
+  document.getElementById("denominator").textContent = "—";
+  document.getElementById("overallSummary").textContent = "";
+  document.getElementById("lastCalculated").textContent = "Not calculated";
+  document.getElementById("findings").value = "";
+  updateSectionBadges();
+}
+
+function saveLocally(){
+  const data = {
+    client: collectClient(),
+    answers: {},
+    notes: {},
+    findings: document.getElementById("findings").value
+  };
+  sectionsData.forEach((sec, sIdx) => {
+    sec.items.forEach((q, qIdx) => {
+      data.answers[`q-${sIdx}-${qIdx}`] = (document.getElementById(`q-${sIdx}-${qIdx}`)||{}).value || "";
+      data.notes[`n-${sIdx}-${qIdx}`] = (document.getElementById(`n-${sIdx}-${qIdx}`)||{}).value || "";
+    });
+  });
+  localStorage.setItem("pci_msp_questionnaire", JSON.stringify(data));
+  alert("Progress saved in this browser.");
+}
+
+function loadLocally(){
+  const raw = localStorage.getItem("pci_msp_questionnaire");
+  if(!raw){ alert("No saved data found in this browser."); return; }
+  const data = JSON.parse(raw);
+  if(data.client){
+    document.getElementById("clientName").value = data.client.name || "";
+    document.getElementById("clientEmail").value = data.client.email || "";
+    document.getElementById("clientPhone").value = data.client.phone || "";
+    document.getElementById("clientAddress").value = data.client.address || "";
+    document.getElementById("assessorName").value = data.client.assessorName || "";
+    document.getElementById("assessorTitle").value = data.client.assessorTitle || "";
+    document.getElementById("assessmentDateTime").value = data.client.dateTime || nowLocalISOForInput();
+  }
+  Object.keys(data.answers||{}).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = data.answers[id];
+  });
+  Object.keys(data.notes||{}).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = data.notes[id];
+  });
+  document.getElementById("findings").value = data.findings || "";
+  updateSectionBadges();
+  calculateScore();
+}
+
+
+// --- PDF modal helpers (global) ---
+let __pciCurrentPdfUrl = "";
+
+function forceClosePdfModal(){
+  const backdrop = document.getElementById("pdfModalBackdrop");
+  const frame = document.getElementById("pdfFrame");
+  if(frame) frame.src = "";
+  if(backdrop) backdrop.style.display = "none";
+  document.body.style.overflow = "";
+  document.removeEventListener("keydown", __pciEscToClosePdfModal);
+}
+
+function __pciEscToClosePdfModal(e){
+  if(e.key === "Escape") forceClosePdfModal();
+}
+
+function closePdfModal(evt){
+  forceClosePdfModal();
+}
+
+function openPdfInNewTab(){
+  if(!__pciCurrentPdfUrl){
+    const frame = document.getElementById("pdfFrame");
+    __pciCurrentPdfUrl = frame ? frame.src : "";
+  }
+  if(__pciCurrentPdfUrl) window.open(__pciCurrentPdfUrl, "_blank", "noopener");
+}
+
+function printPdfInModal(){
+  const frame = document.getElementById("pdfFrame");
+  if(!frame || !frame.contentWindow){
+    window.print();
+    return;
+  }
+  try{
+    __pciCurrentPdfUrl = frame.src || __pciCurrentPdfUrl;
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  }catch(err){
+    openPdfInNewTab();
+  }
+}
+
+// When modal opens via __pciOpenSelectedPdf, track URL & enable ESC close
+document.addEventListener("DOMContentLoaded", function(){
+  const frame = document.getElementById("pdfFrame");
+  const backdrop = document.getElementById("pdfModalBackdrop");
+  if(backdrop){
+    const obs = new MutationObserver(function(){
+      if(backdrop.style.display === "flex"){
+        __pciCurrentPdfUrl = frame ? frame.src : __pciCurrentPdfUrl;
+        document.addEventListener("keydown", __pciEscToClosePdfModal);
+      }
+    });
+    obs.observe(backdrop, { attributes:true, attributeFilter:["style"] });
+  }
+});
+
+window.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
